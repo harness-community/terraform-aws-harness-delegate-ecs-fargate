@@ -6,7 +6,7 @@ resource "aws_cloudwatch_log_group" "this" {
 }
 
 resource "aws_ecs_cluster" "this" {
-  count = var.cluster_id ? 0 : 1
+  count = var.cluster_id != "" ? 0 : 1
 
   name = var.cluster_name
   configuration {
@@ -91,7 +91,7 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "task" {
-  count = var.delegate_policy_arn ? 0 : 1
+  count = var.delegate_policy_arn != "" ? 1 : 0
 
   role       = aws_iam_role.task.name
   policy_arn = var.delegate_policy_arn
@@ -195,7 +195,7 @@ resource "aws_ecs_task_definition" "this" {
 
 resource "aws_ecs_service" "this" {
   name                = "harness-delegate-${var.name}"
-  cluster             = var.cluster_id ? var.cluster_id : aws_ecs_cluster.this[0].id
+  cluster             = var.cluster_id != "" ? var.cluster_id : aws_ecs_cluster.this[0].id
   task_definition     = aws_ecs_task_definition.this.arn
   desired_count       = 1
   launch_type         = "FARGATE"
