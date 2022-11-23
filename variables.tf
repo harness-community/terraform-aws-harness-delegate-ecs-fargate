@@ -18,6 +18,12 @@ variable "delegate_policy_arn" {
   description = "IAM policy to use for the task role, gives your delegate access to AWS"
 }
 
+variable "cluster_name" {
+  type        = string
+  default     = "harness-delegate"
+  description = "Name for the ECS cluster created by the module"
+}
+
 variable "cluster_id" {
   type        = string
   default     = ""
