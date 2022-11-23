@@ -4,6 +4,6 @@ output "aws_ecs_task_definition" {
 }
 
 output "aws_ecs_service" {
-  description = "The ARN of the ECS service"
-  value       = aws_ecs_service.this.arn
+  description = "The ID of the ECS service"
+  value       = aws_ecs_service.this.id
 }

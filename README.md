@@ -43,4 +43,4 @@ Deploy a harness delegate on ecs fargate using terraform
 | Name | Description |
 |------|-------------|
 | aws_ecs_task_definition | The ARN of the ECS task definition |
-| aws_ecs_service | The ARN of the ECS service |
+| aws_ecs_service | The ID of the ECS service |
