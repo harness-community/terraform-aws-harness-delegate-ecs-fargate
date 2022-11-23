@@ -195,7 +195,7 @@ resource "aws_ecs_task_definition" "this" {
 
 resource "aws_ecs_service" "this" {
   name                = "harness-delegate-${var.name}"
-  cluster             = var.cluster_id ? var.cluster_id : aws_ecs_cluster.this.id
+  cluster             = var.cluster_id ? var.cluster_id : aws_ecs_cluster.this[0].id
   task_definition     = aws_ecs_task_definition.this.arn
   desired_count       = 1
   launch_type         = "FARGATE"
