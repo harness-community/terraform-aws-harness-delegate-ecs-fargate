@@ -10,6 +10,7 @@ Deploy a harness delegate on ecs fargate using terraform
 | harness_account_id | Harness account id | `string` | | yes |
 | delegate_token_secret_arn | Secret manager secret that holds the delegate token | `string` | | yes |
 | delegate_policy_arn | An IAM policy to use for the task role, gives your delegate access to AWS | `string` | | no |
+| cluster_id | ID for the ECS cluster to use | `string` | | no |
 | security_groups | VPC security groups to place the delegate pods in | `list(string)` | | yes |
 | subnets | VPC subnets to place the delegate pods in | `list(string)` | | yes |
 | manager_host_and_port | Value from delegate yaml | `string` | https://app.harness.io/gratis | no |

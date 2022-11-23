@@ -18,6 +18,11 @@ variable "delegate_policy_arn" {
   description = "IAM policy to use for the task role, gives your delegate access to AWS"
 }
 
+variable "cluster_id" {
+  type        = string
+  description = "ID for the ECS cluster to use"
+}
+
 variable "security_groups" {
   type        = list(string)
   description = "VPC security groups to place the delegate pods in"
