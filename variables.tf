@@ -20,6 +20,7 @@ variable "delegate_policy_arn" {
 
 variable "cluster_id" {
   type        = string
+  default     = ""
   description = "ID for the ECS cluster to use"
 }
 
