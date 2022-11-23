@@ -6,6 +6,7 @@ Deploy a harness delegate on ecs fargate using terraform
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| name | Delegate name | `string` | | yes |
 | harness_account_id | Harness account id | `string` | | yes |
 | delegate_token_secret_arn | Secret manager secret that holds the delegate token | `string` | | yes |
 | delegate_policy_arn | An IAM policy to use for the task role, gives your delegate access to AWS | `string` | | no |

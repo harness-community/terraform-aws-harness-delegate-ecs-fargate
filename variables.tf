@@ -1,3 +1,8 @@
+variable "name" {
+  type        = string
+  description = "Delegate name"
+}
+
 variable "harness_account_id" {
   type        = string
   description = "Harness account id"
