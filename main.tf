@@ -161,7 +161,7 @@ resource "aws_ecs_task_definition" "this" {
       },
       {
         name  = "INIT_SCRIPT",
-        value = ""
+        value = var.init_script
       },
       {
         name  = "DEPLOY_MODE",
