@@ -3,6 +3,10 @@ data "aws_region" "current" {}
 
 resource "aws_cloudwatch_log_group" "this" {
   name = "harness-delegate-${var.name}"
+
+  tags = {
+    "source" = "rssnyder/terraform-aws-harness-delegate-ecs-fargate"
+  }
 }
 
 resource "aws_ecs_cluster" "this" {
@@ -17,6 +21,10 @@ resource "aws_ecs_cluster" "this" {
         cloud_watch_log_group_name     = aws_cloudwatch_log_group.this.name
       }
     }
+  }
+
+  tags = {
+    "source" = "rssnyder/terraform-aws-harness-delegate-ecs-fargate"
   }
 }
 
@@ -38,6 +46,11 @@ resource "aws_iam_role" "task_execution" {
  ]
 }
 EOF
+
+  tags = {
+    "source"  = "rssnyder/terraform-aws-harness-delegate-ecs-fargate",
+    "cluster" = var.cluster_id != "" ? var.cluster_id : aws_ecs_cluster.this[0].id
+  }
 }
 
 resource "aws_iam_policy" "task_execution" {
@@ -88,6 +101,11 @@ resource "aws_iam_role" "task" {
  ]
 }
 EOF
+
+  tags = {
+    "source"  = "rssnyder/terraform-aws-harness-delegate-ecs-fargate",
+    "cluster" = var.cluster_id != "" ? var.cluster_id : aws_ecs_cluster.this[0].id
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "task" {
@@ -191,6 +209,11 @@ resource "aws_ecs_task_definition" "this" {
       }
     ]
   }])
+
+  tags = {
+    "source"  = "rssnyder/terraform-aws-harness-delegate-ecs-fargate",
+    "cluster" = var.cluster_id != "" ? var.cluster_id : aws_ecs_cluster.this[0].id
+  }
 }
 
 resource "aws_ecs_service" "this" {
