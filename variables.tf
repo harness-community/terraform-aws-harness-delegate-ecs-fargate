@@ -42,6 +42,11 @@ variable "subnets" {
 
 # delegate configuration
 
+variable "init_script" {
+  type    = string
+  default = ""
+}
+
 variable "manager_host_and_port" {
   type    = string
   default = "https://app.harness.io/gratis"
