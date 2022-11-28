@@ -78,6 +78,7 @@ EOF
 | cluster_id | ID for the ECS cluster to use | `string` | | no |
 | security_groups | VPC security groups to place the delegate pods in | `list(string)` | | yes |
 | subnets | VPC subnets to place the delegate pods in | `list(string)` | | yes |
+| init_script | Script to run on delegate creation | `string` | | no |
 | manager_host_and_port | Value from delegate yaml | `string` | https://app.harness.io/gratis | no |
 | watcher_storage_url | Value from delegate yaml | `string` | https://app.harness.io/public/prod/premium/watchers | no |
 | delegate_storage_url | Value from delegate yaml | `string` | https://app.harness.io | no |
@@ -106,5 +107,8 @@ EOF
 
 | Name | Description |
 |------|-------------|
+| aws_ecs_cluster | The ID of the ECS cluster created |
 | aws_ecs_task_definition | The ARN of the ECS task definition |
 | aws_ecs_service | The ID of the ECS service |
+| aws_iam_role_task_execution | The IAM role for ECS execution |
+| aws_iam_role_task | The IAM role for the ECS task |

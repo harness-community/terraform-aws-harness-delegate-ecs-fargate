@@ -1,5 +1,5 @@
 output "aws_ecs_cluster" {
-  description = "The ID of the ECS cluster"
+  description = "The ID of the ECS cluster created"
   value       = length(aws_ecs_cluster.this) > 0 ? aws_ecs_cluster.this[0].id : null
 }
 
