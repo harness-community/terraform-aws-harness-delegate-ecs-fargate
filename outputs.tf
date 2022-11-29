@@ -1,6 +1,6 @@
 output "aws_ecs_cluster" {
-  description = "The ID of the ECS cluster created"
-  value       = length(aws_ecs_cluster.this) > 0 ? aws_ecs_cluster.this[0].id : null
+  description = "The ID of the ECS cluster"
+  value       = var.cluster_id != "" ? var.cluster_id : aws_ecs_cluster.this[0].id
 }
 
 output "aws_ecs_task_definition" {
