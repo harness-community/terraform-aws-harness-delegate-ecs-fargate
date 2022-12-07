@@ -109,10 +109,10 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "task" {
-  count = var.delegate_policy_arn != "" ? 1 : 0
+  for_each = toset(var.delegate_policy_arns)
 
   role       = aws_iam_role.task.name
-  policy_arn = var.delegate_policy_arn
+  policy_arn = each.key
 }
 
 resource "aws_ecs_task_definition" "this" {

@@ -10,7 +10,10 @@ module "delegate" {
   name                      = "ecs"
   harness_account_id        = "wlgELJ0TTre5aZhzpt8gVA"
   delegate_token_secret_arn = "arn:aws:secretsmanager:us-west-2:012345678901:secret:harness/delegate-zBsttc"
-  delegate_policy_arn       = aws_iam_policy.delegate_aws_access.arn
+  delegate_policy_arns      = [
+    aws_iam_policy.delegate_aws_access.arn,
+    "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
+  ]
   security_groups = [
     module.vpc.default_security_group_id
   ]
@@ -73,7 +76,7 @@ EOF
 | name | Delegate name | `string` | | yes |
 | harness_account_id | Harness account id | `string` | | yes |
 | delegate_token_secret_arn | Secret manager secret that holds the delegate token | `string` | | yes |
-| delegate_policy_arn | An IAM policy to use for the task role, gives your delegate access to AWS | `string` | | no |
+| delegate_policy_arns | An IAM policies to use for the task role, gives your delegate access to AWS | `list(string)` | | no |
 | cluster_name | Name for the ECS cluster created by the module | `string` | harness-delegate | no |
 | cluster_id | ID for the ECS cluster to use | `string` | | no |
 | security_groups | VPC security groups to place the delegate pods in | `list(string)` | | yes |
