@@ -13,9 +13,9 @@ variable "delegate_token_secret_arn" {
   description = "Secret manager secret that holds the delegate token"
 }
 
-variable "delegate_policy_arn" {
-  type        = string
-  description = "IAM policy to use for the task role, gives your delegate access to AWS"
+variable "delegate_policy_arns" {
+  type        = list(string)
+  description = "IAM policies to use for the task role, gives your delegate access to AWS"
 }
 
 variable "cluster_name" {
