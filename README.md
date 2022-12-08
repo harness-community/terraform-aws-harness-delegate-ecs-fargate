@@ -121,3 +121,4 @@ EOF
 | aws_ecs_service | The ID of the ECS service |
 | aws_iam_role_task_execution | The IAM role for ECS execution |
 | aws_iam_role_task | The IAM role for the ECS task |
+| aws_efs_file_system | The filesystem used for drone runner |
