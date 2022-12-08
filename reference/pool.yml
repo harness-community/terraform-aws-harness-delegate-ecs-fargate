@@ -1,0 +1,21 @@
+version: "1"
+instances:
+  - name: linux
+    default: true
+    type: amazon
+    pool: 1
+    limit: 4
+    platform:
+      os: linux
+      arch: amd64
+    spec:
+      account:
+        region: us-west-2
+        availability_zone: us-west-2a
+      ami: ami-08df94af6199f15b6
+      size: t2.nano
+      network:
+        private_ip: true
+        subnet_id: subnet-0974d4940eab1ea9d
+        security_groups:
+        - sg-0472e18c1a90179d9
