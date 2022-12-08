@@ -76,11 +76,13 @@ EOF
 | name | Delegate name | `string` | | yes |
 | harness_account_id | Harness account id | `string` | | yes |
 | delegate_token_secret_arn | Secret manager secret that holds the delegate token | `string` | | yes |
+| registry_secret_arn | Secret manager secret that holds the login for a container registry | `string` | | no |
 | delegate_policy_arns | An IAM policies to use for the task role, gives your delegate access to AWS | `list(string)` | | no |
 | cluster_name | Name for the ECS cluster created by the module | `string` | harness-delegate | no |
 | cluster_id | ID for the ECS cluster to use | `string` | | no |
 | security_groups | VPC security groups to place the delegate pods in | `list(string)` | | yes |
 | subnets | VPC subnets to place the delegate pods in | `list(string)` | | yes |
+| delegate_image | Delegate image to use | `string` | harness/delegate:latest | no |
 | init_script | Script to run on delegate creation | `string` | | no |
 | manager_host_and_port | Value from delegate yaml | `string` | https://app.harness.io/gratis | no |
 | watcher_storage_url | Value from delegate yaml | `string` | https://app.harness.io/public/prod/premium/watchers | no |

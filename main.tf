@@ -242,21 +242,6 @@ resource "aws_ecs_task_definition" "this" {
     }
   ])
 
-  volume {
-    name = "runner-config"
-
-    efs_volume_configuration {
-      file_system_id          = aws_efs_file_system.runner.id
-      root_directory          = "/"
-      transit_encryption      = "ENABLED"
-      transit_encryption_port = 2999
-      authorization_config {
-        access_point_id = aws_efs_access_point.runner.id
-        iam             = "ENABLED"
-      }
-    }
-  }
-
   tags = {
     "source"  = "rssnyder/terraform-aws-harness-delegate-ecs-fargate",
     "cluster" = var.cluster_id != "" ? var.cluster_id : aws_ecs_cluster.this[0].id
