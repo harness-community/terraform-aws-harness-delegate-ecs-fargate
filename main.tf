@@ -1,6 +1,5 @@
 data "aws_region" "current" {}
 
-
 resource "aws_cloudwatch_log_group" "this" {
   name = "harness-delegate-${var.name}"
 
@@ -78,9 +77,37 @@ resource "aws_iam_policy" "task_execution" {
 EOF
 }
 
+resource "aws_iam_policy" "task_execution_registry" {
+  count = var.registry_secret_arn != "" ? 1 : 0
+
+  name        = "${aws_iam_role.task_execution.name}_registry"
+  description = "Policy for execution of the delegate container in ecs to log into image registry"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+           "Sid": "RegistryLogin",
+           "Effect": "Allow",
+           "Action": "secretsmanager:GetSecretValue",
+           "Resource": "${var.registry_secret_arn}"
+       }
+    ]
+}
+EOF
+}
+
 resource "aws_iam_role_policy_attachment" "task_execution" {
   role       = aws_iam_role.task_execution.name
   policy_arn = aws_iam_policy.task_execution.arn
+}
+
+resource "aws_iam_role_policy_attachment" "task_execution_registry" {
+  count = var.registry_secret_arn != "" ? 1 : 0
+
+  role       = aws_iam_role.task_execution.name
+  policy_arn = aws_iam_policy.task_execution_registry[0].arn
 }
 
 resource "aws_iam_role" "task" {
@@ -123,92 +150,97 @@ resource "aws_ecs_task_definition" "this" {
   memory                   = 2048
   execution_role_arn       = aws_iam_role.task_execution.arn
   task_role_arn            = aws_iam_role.task.arn
-  container_definitions = jsonencode([{
-    name      = "ecs-delegate"
-    image     = "harness/delegate:latest"
-    essential = true
-    memory    = 2048
-    logConfiguration = {
-      logDriver = "awslogs",
-      options = {
-        awslogs-group         = aws_cloudwatch_log_group.this.name,
-        awslogs-region        = data.aws_region.current.name,
-        awslogs-stream-prefix = "ecs"
-      }
-    },
-    secrets = [
-      {
-        name      = "DELEGATE_TOKEN",
-        valueFrom = "${var.delegate_token_secret_arn}:::"
-      }
-    ],
-    environment = [
-      {
-        name  = "ACCOUNT_ID",
-        value = var.harness_account_id
+  container_definitions = jsonencode([
+    {
+      name      = "ecs-delegate"
+      image     = var.delegate_image
+      essential = true
+      memory    = 1024
+      repositoryCredentials = var.registry_secret_arn != "" ? {
+        credentialsParameter = var.registry_secret_arn
+      } : null,
+      logConfiguration = {
+        logDriver = "awslogs",
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.this.name,
+          awslogs-region        = data.aws_region.current.name,
+          awslogs-stream-prefix = "ecs/delegate"
+        }
       },
-      {
-        name  = "DELEGATE_CHECK_LOCATION",
-        value = "delegatefree.txt"
-      },
-      {
-        name  = "DELEGATE_STORAGE_URL",
-        value = var.delegate_storage_url
-      },
-      {
-        name  = "DELEGATE_TYPE",
-        value = "DOCKER"
-      },
-      {
-        name  = "INIT_SCRIPT",
-        value = var.init_script
-      },
-      {
-        name  = "DEPLOY_MODE",
-        value = "KUBERNETES"
-      },
-      {
-        name  = "MANAGER_HOST_AND_PORT",
-        value = var.manager_host_and_port
-      },
-      {
-        name  = "WATCHER_CHECK_LOCATION",
-        value = var.watcher_check_location
-      },
-      {
-        name  = "WATCHER_STORAGE_URL",
-        value = var.watcher_storage_url
-      },
-      {
-        name  = "CDN_URL",
-        value = var.cdn_url
-      },
-      {
-        name  = "REMOTE_WATCHER_URL_CDN",
-        value = var.remote_watcher_url_cdn
-      },
-      {
-        name  = "DELEGATE_NAME",
-        value = var.name
-      },
-      {
-        name  = "NEXT_GEN",
-        value = "true"
-      },
-      {
-        name  = "DELEGATE_DESCRIPTION",
-        value = var.delegate_description
-      },
-      {
-        name  = "DELEGATE_TAGS",
-        value = var.delegate_tags
-      },
-      {
-        name  = "PROXY_MANAGER",
-        value = var.proxy_manager
-      }
-    ]
-  }])
+      secrets = [
+        {
+          name      = "DELEGATE_TOKEN",
+          valueFrom = "${var.delegate_token_secret_arn}:::"
+        }
+      ],
+      environment = [
+        {
+          name  = "ACCOUNT_ID",
+          value = var.harness_account_id
+        },
+        {
+          name  = "DELEGATE_CHECK_LOCATION",
+          value = "delegatefree.txt"
+        },
+        {
+          name  = "DELEGATE_STORAGE_URL",
+          value = var.delegate_storage_url
+        },
+        {
+          name  = "DELEGATE_TYPE",
+          value = "DOCKER"
+        },
+        {
+          name  = "INIT_SCRIPT",
+          value = var.init_script
+        },
+        {
+          name  = "DEPLOY_MODE",
+          value = "KUBERNETES"
+        },
+        {
+          name  = "MANAGER_HOST_AND_PORT",
+          value = var.manager_host_and_port
+        },
+        {
+          name  = "WATCHER_CHECK_LOCATION",
+          value = var.watcher_check_location
+        },
+        {
+          name  = "WATCHER_STORAGE_URL",
+          value = var.watcher_storage_url
+        },
+        {
+          name  = "CDN_URL",
+          value = var.cdn_url
+        },
+        {
+          name  = "REMOTE_WATCHER_URL_CDN",
+          value = var.remote_watcher_url_cdn
+        },
+        {
+          name  = "DELEGATE_NAME",
+          value = var.name
+        },
+        {
+          name  = "NEXT_GEN",
+          value = "true"
+        },
+        {
+          name  = "DELEGATE_DESCRIPTION",
+          value = var.delegate_description
+        },
+        {
+          name  = "DELEGATE_TAGS",
+          value = var.delegate_tags
+        },
+        {
+          name  = "PROXY_MANAGER",
+          value = var.proxy_manager
+        }
+      ]
+    }
+  ])
 
   tags = {
     "source"  = "rssnyder/terraform-aws-harness-delegate-ecs-fargate",

@@ -13,6 +13,12 @@ variable "delegate_token_secret_arn" {
   description = "Secret manager secret that holds the delegate token"
 }
 
+variable "registry_secret_arn" {
+  type        = string
+  description = "Secret manager secret that holds the login for a container registry"
+  default     = ""
+}
+
 variable "delegate_policy_arns" {
   type        = list(string)
   description = "IAM policies to use for the task role, gives your delegate access to AWS"
@@ -41,6 +47,11 @@ variable "subnets" {
 }
 
 # delegate configuration
+
+variable "delegate_image" {
+  type    = string
+  default = "harness/delegate:latest"
+}
 
 variable "init_script" {
   type    = string
