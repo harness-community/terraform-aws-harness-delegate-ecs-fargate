@@ -4,7 +4,7 @@ Deploy a harness delegate on ecs fargate using terraform.
 
 Optionally, create an ECS [drone runner](https://docs.drone.io/runner/vm/drivers/amazon/) to enable VM builds in [Harness CIE](https://harness.io/technical-blog/harness-ci-aws-vms).
 
-## Example
+## Delegate Example
 
 ```terraform
 module "delegate" {
@@ -13,8 +13,7 @@ module "delegate" {
   harness_account_id        = "wlgELJ0TTre5aZhzpt8gVA"
   delegate_token_secret_arn = "arn:aws:secretsmanager:us-west-2:012345678901:secret:harness/delegate-zBsttc"
   delegate_policy_arns      = [
-    aws_iam_policy.delegate_aws_access.arn,
-    "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
+    aws_iam_policy.delegate_aws_access.arn
   ]
   security_groups = [
     module.vpc.default_security_group_id
@@ -68,6 +67,34 @@ resource "aws_iam_policy" "delegate_aws_access" {
    ]
 }
 EOF
+}
+```
+
+## Delegate + Drone Runner Example
+
+To deploy a drone runner and enable VM based CI builds you just need your runner config as a base64 string.
+
+```shell
+cat drone_runner.yml | base64 -w 0
+```
+
+Refer to the [drone documentation](https://docs.drone.io/runner/vm/drivers/amazon/) on all the prerequisites needed to build the yaml and set up your VPC.
+
+```terraform
+module "delegate" {
+  source                    = "git::https://github.com/rssnyder/terraform-aws-harness-delegate-ecs-fargate.git"
+  name                      = "ecs"
+  harness_account_id        = "wlgELJ0TTre5aZhzpt8gVA"
+  delegate_token_secret_arn = "arn:aws:secretsmanager:us-west-2:012345678901:secret:harness/delegate-zBsttc"
+  base64_runner_config      = "dmVyc2lvbjogI...ZDdiYTI4Cg=="
+  delegate_policy_arns      = [
+    aws_iam_policy.delegate_aws_access.arn,
+    "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+  ]
+  security_groups = [
+    module.vpc.default_security_group_id
+  ]
+  subnets = module.vpc.private_subnets
 }
 ```
 
