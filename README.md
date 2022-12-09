@@ -1,6 +1,8 @@
 # terraform-aws-harness-delegate-ecs-fargate
 
-Deploy a harness delegate on ecs fargate using terraform
+Deploy a harness delegate on ecs fargate using terraform.
+
+Optionally, create an ECS [drone runner](https://docs.drone.io/runner/vm/drivers/amazon/) to enable VM builds in [Harness CIE](https://harness.io/technical-blog/harness-ci-aws-vms).
 
 ## Example
 
@@ -93,6 +95,8 @@ EOF
 | delegate_description | Value from delegate yaml | `string` | | no |
 | delegate_tags | Value from delegate yaml | `string` | | no |
 | proxy_manager | Value from delegate yaml | `string` | | no |
+| runner_image | Runner image to use | `string` | drone/drone-runner-aws | no |
+| base64_runner_config | An [AWS drone runner](https://docs.drone.io/runner/vm/drivers/amazon/) config base64 encoded | `string` | | no |
 
 ## Resources
 
@@ -117,3 +121,4 @@ EOF
 | aws_ecs_service | The ID of the ECS service |
 | aws_iam_role_task_execution | The IAM role for ECS execution |
 | aws_iam_role_task | The IAM role for the ECS task |
+| aws_efs_file_system | The filesystem used for drone runner |

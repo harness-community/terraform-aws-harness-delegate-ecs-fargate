@@ -101,3 +101,16 @@ variable "proxy_manager" {
   type    = string
   default = ""
 }
+
+# runner configuration
+
+variable "runner_image" {
+  type    = string
+  default = "drone/drone-runner-aws"
+}
+
+variable "base64_runner_config" {
+  type        = string
+  description = "An AWS drone runner config base64 encoded"
+  default     = ""
+}
