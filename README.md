@@ -72,6 +72,8 @@ EOF
 
 ## Delegate + Drone Runner Example
 
+![terraform-aws-harness-delegate-ecs-fargate (2)](https://user-images.githubusercontent.com/7338312/207667130-ebf933d8-e1d3-462d-b0ee-9ca3e28a08dc.png)
+
 To deploy a drone runner and enable VM based CI builds you just need your runner config file.
 
 ```
@@ -133,7 +135,9 @@ module "delegate" {
 | delegate_tags | Value from delegate yaml | `string` | | no |
 | proxy_manager | Value from delegate yaml | `string` | | no |
 | runner_image | Runner image to use | `string` | drone/drone-runner-aws | no |
+| runner_config | An [AWS drone runner](https://docs.drone.io/runner/vm/drivers/amazon/) config | `string` | | no |
 | base64_runner_config | An [AWS drone runner](https://docs.drone.io/runner/vm/drivers/amazon/) config base64 encoded | `string` | | no |
+| kms_key_id | A KMS key to use for encrypting the EFS volume | `string` | | no |
 
 ## Resources
 
@@ -146,8 +150,12 @@ module "delegate" {
 |task_execution|aws_iam_role_policy_attachment|
 |task|aws_iam_role|
 |task|aws_iam_role_policy_attachment|
-|this|aws_ecs_task_definition|
+|delegate|aws_ecs_task_definition|
+|delegate-runner|aws_ecs_task_definition|
 |this|aws_ecs_service|
+|runner|aws_efs_file_system|
+|runner|aws_efs_access_point|
+|runner|aws_efs_mount_target|
 
 ## Outputs
 
