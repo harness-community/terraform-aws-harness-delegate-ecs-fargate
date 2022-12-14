@@ -5,7 +5,7 @@ output "aws_ecs_cluster" {
 
 output "aws_ecs_task_definition" {
   description = "The ARN of the ECS task definition"
-  value       = var.base64_runner_config != "" ? aws_ecs_task_definition.delegate-runner[0].arn : aws_ecs_task_definition.delegate[0].arn
+  value       = local.runner_config != "" ? aws_ecs_task_definition.delegate-runner[0].arn : aws_ecs_task_definition.delegate[0].arn
 }
 
 output "aws_ecs_service" {
@@ -25,5 +25,5 @@ output "aws_iam_role_task" {
 
 output "aws_efs_file_system" {
   description = "The filesystem used for drone runner"
-  value       = var.base64_runner_config != "" ? aws_efs_file_system.runner[0].arn : null
+  value       = local.runner_config != "" ? aws_efs_file_system.runner[0].arn : null
 }
