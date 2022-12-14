@@ -81,7 +81,7 @@ To deploy a drone runner and enable VM based CI builds you just need your runner
 Or as a base64 encoded string
 
 ```shell
-cat drone_runner.yml | base64 -w 0
+cat pool.yml | base64 -w 0
 ```
 
 ```
