@@ -1,3 +1,7 @@
+locals {
+  runner_config = var.base64_runner_config != "" ? var.base64_runner_config : var.runner_config != "" ? base64encode(var.runner_config) : ""
+}
+
 data "aws_region" "current" {}
 
 resource "aws_cloudwatch_log_group" "this" {
@@ -143,7 +147,7 @@ resource "aws_iam_role_policy_attachment" "task" {
 }
 
 resource "aws_ecs_task_definition" "delegate" {
-  count = var.base64_runner_config != "" ? 0 : 1
+  count = local.runner_config != "" ? 0 : 1
 
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
@@ -251,7 +255,7 @@ resource "aws_ecs_task_definition" "delegate" {
 }
 
 resource "aws_ecs_task_definition" "delegate-runner" {
-  count = var.base64_runner_config != "" ? 1 : 0
+  count = local.runner_config != "" ? 1 : 0
 
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
@@ -406,7 +410,7 @@ resource "aws_ecs_task_definition" "delegate-runner" {
       environment = [
         {
           name  = "BASE64_FILE",
-          value = var.base64_runner_config
+          value = local.runner_config
         },
         {
           name  = "FILENAME",
@@ -440,7 +444,7 @@ resource "aws_ecs_task_definition" "delegate-runner" {
 resource "aws_ecs_service" "this" {
   name                = "harness-delegate-${var.name}"
   cluster             = var.cluster_id != "" ? var.cluster_id : aws_ecs_cluster.this[0].id
-  task_definition     = var.base64_runner_config != "" ? aws_ecs_task_definition.delegate-runner[0].arn : aws_ecs_task_definition.delegate[0].arn
+  task_definition     = local.runner_config != "" ? aws_ecs_task_definition.delegate-runner[0].arn : aws_ecs_task_definition.delegate[0].arn
   desired_count       = 1
   launch_type         = "FARGATE"
   scheduling_strategy = "REPLICA"

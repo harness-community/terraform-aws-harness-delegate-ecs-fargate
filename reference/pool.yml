@@ -3,7 +3,7 @@ instances:
   - name: linux
     default: true
     type: amazon
-    pool: 1
+    pool: 0
     limit: 4
     platform:
       os: linux

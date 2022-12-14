@@ -109,8 +109,20 @@ variable "runner_image" {
   default = "drone/drone-runner-aws"
 }
 
+variable "runner_config" {
+  type        = string
+  description = "An AWS drone runner config"
+  default     = ""
+}
+
 variable "base64_runner_config" {
   type        = string
   description = "An AWS drone runner config base64 encoded"
+  default     = ""
+}
+
+variable "kms_key_id" {
+  type        = string
+  description = "A KMS key to use for encrypting the EFS volume"
   default     = ""
 }
