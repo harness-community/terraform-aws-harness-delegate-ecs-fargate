@@ -8,7 +8,7 @@ Optionally, create an ECS [drone runner](https://docs.drone.io/runner/vm/drivers
 
 ```terraform
 module "delegate" {
-  source                    = "git::https://github.com/rssnyder/terraform-aws-harness-delegate-ecs-fargate.git"
+  source                    = "git::https://github.com/harness-community/terraform-aws-harness-delegate-ecs-fargate.git"
   name                      = "ecs"
   harness_account_id        = "wlgELJ0TTre5aZhzpt8gVA"
   delegate_token_secret_arn = "arn:aws:secretsmanager:us-west-2:012345678901:secret:harness/delegate-zBsttc"
@@ -94,7 +94,7 @@ Refer to the [drone documentation](https://docs.drone.io/runner/vm/drivers/amazo
 
 ```terraform
 module "delegate" {
-  source                    = "git::https://github.com/rssnyder/terraform-aws-harness-delegate-ecs-fargate.git"
+  source                    = "git::https://github.com/harness-community/terraform-aws-harness-delegate-ecs-fargate.git"
   name                      = "ecs"
   harness_account_id        = "wlgELJ0TTre5aZhzpt8gVA"
   delegate_token_secret_arn = "arn:aws:secretsmanager:us-west-2:012345678901:secret:harness/delegate-zBsttc"
