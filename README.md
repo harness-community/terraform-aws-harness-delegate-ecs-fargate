@@ -110,60 +110,77 @@ module "delegate" {
 }
 ```
 
-## Inputs
+## Requirements
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| name | Delegate name | `string` | | yes |
-| harness_account_id | Harness account id | `string` | | yes |
-| delegate_token_secret_arn | Secret manager secret that holds the delegate token | `string` | | yes |
-| registry_secret_arn | Secret manager secret that holds the login for a container registry | `string` | | no |
-| delegate_policy_arns | An IAM policies to use for the task role, gives your delegate access to AWS | `list(string)` | | no |
-| cluster_name | Name for the ECS cluster created by the module | `string` | harness-delegate | no |
-| cluster_id | ID for the ECS cluster to use | `string` | | no |
-| security_groups | VPC security groups to place the delegate pods in | `list(string)` | | yes |
-| subnets | VPC subnets to place the delegate pods in | `list(string)` | | yes |
-| delegate_image | Delegate image to use | `string` | harness/delegate:latest | no |
-| init_script | Script to run on delegate creation | `string` | | no |
-| manager_host_and_port | Value from delegate yaml | `string` | https://app.harness.io/gratis | no |
-| watcher_storage_url | Value from delegate yaml | `string` | https://app.harness.io/public/prod/premium/watchers | no |
-| delegate_storage_url | Value from delegate yaml | `string` | https://app.harness.io | no |
-| watcher_check_location | Value from delegate yaml | `string` | current.version | no |
-| cdn_url | Value from delegate yaml | `string` | https://app.harness.io | no |
-| remote_watcher_url_cdn | Value from delegate yaml | `string` | https://app.harness.io/public/shared/watchers/builds | no |
-| delegate_description | Value from delegate yaml | `string` | | no |
-| delegate_tags | Value from delegate yaml | `string` | | no |
-| proxy_manager | Value from delegate yaml | `string` | | no |
-| runner_image | Runner image to use | `string` | drone/drone-runner-aws | no |
-| runner_config | An [AWS drone runner](https://docs.drone.io/runner/vm/drivers/amazon/) config | `string` | | no |
-| base64_runner_config | An [AWS drone runner](https://docs.drone.io/runner/vm/drivers/amazon/) config base64 encoded | `string` | | no |
-| kms_key_id | A KMS key to use for encrypting the EFS volume | `string` | | no |
+No requirements.
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_aws"></a> [aws](#provider\_aws) | n/a |
+
+## Modules
+
+No modules.
 
 ## Resources
 
 | Name | Type |
 |------|------|
-|this|aws_cloudwatch_log_group|
-|this|aws_ecs_cluster|
-|task_execution|aws_iam_role|
-|task_execution|aws_iam_policy|
-|task_execution|aws_iam_role_policy_attachment|
-|task|aws_iam_role|
-|task|aws_iam_role_policy_attachment|
-|delegate|aws_ecs_task_definition|
-|delegate-runner|aws_ecs_task_definition|
-|this|aws_ecs_service|
-|runner|aws_efs_file_system|
-|runner|aws_efs_access_point|
-|runner|aws_efs_mount_target|
+| [aws_cloudwatch_log_group.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group) | resource |
+| [aws_ecs_cluster.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_cluster) | resource |
+| [aws_ecs_service.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_service) | resource |
+| [aws_ecs_task_definition.delegate](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_task_definition) | resource |
+| [aws_ecs_task_definition.delegate-runner](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_task_definition) | resource |
+| [aws_efs_access_point.runner](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/efs_access_point) | resource |
+| [aws_efs_file_system.runner](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/efs_file_system) | resource |
+| [aws_efs_mount_target.runner](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/efs_mount_target) | resource |
+| [aws_iam_policy.task_execution](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_policy.task_execution_registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_role.task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role.task_execution](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role_policy_attachment.task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.task_execution](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.task_execution_registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_base64_runner_config"></a> [base64\_runner\_config](#input\_base64\_runner\_config) | An AWS drone runner config base64 encoded | `string` | `""` | no |
+| <a name="input_cdn_url"></a> [cdn\_url](#input\_cdn\_url) | n/a | `string` | `"https://app.harness.io"` | no |
+| <a name="input_cluster_id"></a> [cluster\_id](#input\_cluster\_id) | ID for the ECS cluster to use | `string` | `""` | no |
+| <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | Name for the ECS cluster created by the module | `string` | `"harness-delegate"` | no |
+| <a name="input_delegate_description"></a> [delegate\_description](#input\_delegate\_description) | n/a | `string` | `""` | no |
+| <a name="input_delegate_image"></a> [delegate\_image](#input\_delegate\_image) | n/a | `string` | `"harness/delegate:latest"` | no |
+| <a name="input_delegate_policy_arns"></a> [delegate\_policy\_arns](#input\_delegate\_policy\_arns) | IAM policies to use for the task role, gives your delegate access to AWS | `list(string)` | n/a | yes |
+| <a name="input_delegate_storage_url"></a> [delegate\_storage\_url](#input\_delegate\_storage\_url) | n/a | `string` | `"https://app.harness.io"` | no |
+| <a name="input_delegate_tags"></a> [delegate\_tags](#input\_delegate\_tags) | n/a | `string` | `""` | no |
+| <a name="input_delegate_token_secret_arn"></a> [delegate\_token\_secret\_arn](#input\_delegate\_token\_secret\_arn) | Secret manager secret that holds the delegate token | `string` | n/a | yes |
+| <a name="input_harness_account_id"></a> [harness\_account\_id](#input\_harness\_account\_id) | Harness account id | `string` | n/a | yes |
+| <a name="input_init_script"></a> [init\_script](#input\_init\_script) | n/a | `string` | `""` | no |
+| <a name="input_kms_key_id"></a> [kms\_key\_id](#input\_kms\_key\_id) | A KMS key to use for encrypting the EFS volume | `string` | `""` | no |
+| <a name="input_manager_host_and_port"></a> [manager\_host\_and\_port](#input\_manager\_host\_and\_port) | n/a | `string` | `"https://app.harness.io/gratis"` | no |
+| <a name="input_name"></a> [name](#input\_name) | Delegate name | `string` | n/a | yes |
+| <a name="input_proxy_manager"></a> [proxy\_manager](#input\_proxy\_manager) | n/a | `string` | `""` | no |
+| <a name="input_registry_secret_arn"></a> [registry\_secret\_arn](#input\_registry\_secret\_arn) | Secret manager secret that holds the login for a container registry | `string` | `""` | no |
+| <a name="input_remote_watcher_url_cdn"></a> [remote\_watcher\_url\_cdn](#input\_remote\_watcher\_url\_cdn) | n/a | `string` | `"https://app.harness.io/public/shared/watchers/builds"` | no |
+| <a name="input_runner_config"></a> [runner\_config](#input\_runner\_config) | An AWS drone runner config | `string` | `""` | no |
+| <a name="input_runner_image"></a> [runner\_image](#input\_runner\_image) | n/a | `string` | `"drone/drone-runner-aws"` | no |
+| <a name="input_security_groups"></a> [security\_groups](#input\_security\_groups) | VPC security groups to place the delegate pods in | `list(string)` | n/a | yes |
+| <a name="input_subnets"></a> [subnets](#input\_subnets) | VPC subnets to place the delegate pods in | `list(string)` | n/a | yes |
+| <a name="input_watcher_check_location"></a> [watcher\_check\_location](#input\_watcher\_check\_location) | n/a | `string` | `"current.version"` | no |
+| <a name="input_watcher_storage_url"></a> [watcher\_storage\_url](#input\_watcher\_storage\_url) | n/a | `string` | `"https://app.harness.io/public/prod/premium/watchers"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| aws_ecs_cluster | The ID of the ECS cluster created |
-| aws_ecs_task_definition | The ARN of the ECS task definition |
-| aws_ecs_service | The ID of the ECS service |
-| aws_iam_role_task_execution | The IAM role for ECS execution |
-| aws_iam_role_task | The IAM role for the ECS task |
-| aws_efs_file_system | The filesystem used for drone runner |
+| <a name="output_aws_ecs_cluster"></a> [aws\_ecs\_cluster](#output\_aws\_ecs\_cluster) | The ID of the ECS cluster |
+| <a name="output_aws_ecs_service"></a> [aws\_ecs\_service](#output\_aws\_ecs\_service) | The ID of the ECS service |
+| <a name="output_aws_ecs_task_definition"></a> [aws\_ecs\_task\_definition](#output\_aws\_ecs\_task\_definition) | The ARN of the ECS task definition |
+| <a name="output_aws_efs_file_system"></a> [aws\_efs\_file\_system](#output\_aws\_efs\_file\_system) | The filesystem used for drone runner |
+| <a name="output_aws_iam_role_task"></a> [aws\_iam\_role\_task](#output\_aws\_iam\_role\_task) | The IAM role for the ECS task |
+| <a name="output_aws_iam_role_task_execution"></a> [aws\_iam\_role\_task\_execution](#output\_aws\_iam\_role\_task\_execution) | The IAM role for ECS execution |
