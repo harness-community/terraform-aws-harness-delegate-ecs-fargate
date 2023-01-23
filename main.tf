@@ -146,6 +146,48 @@ resource "aws_iam_role_policy_attachment" "task" {
   policy_arn = each.key
 }
 
+resource "aws_iam_policy" "task_exec" {
+  count = var.enable_ecs_exec ? 1 : 0
+
+  name        = "${aws_iam_role.task_execution.name}_task_exec"
+  description = "Policy for execution of commands on the ecs containers"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "ssmmessages:CreateControlChannel",
+          "ssmmessages:CreateDataChannel",
+          "ssmmessages:OpenControlChannel",
+          "ssmmessages:OpenDataChannel"
+        ],
+        "Resource": "*"
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "logs:DescribeLogGroups",
+          "logs:CreateLogStream",
+          "logs:DescribeLogStreams",
+          "logs:PutLogEvents"
+        ],
+        "Resource": "*"
+      }
+    ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "task_exec" {
+  count = var.enable_ecs_exec ? 1 : 0
+
+  role       = aws_iam_role.task.name
+  policy_arn = aws_iam_policy.task_exec[0].arn
+}
+
 resource "aws_ecs_task_definition" "delegate" {
   count = local.runner_config != "" ? 0 : 1
 
@@ -294,11 +336,15 @@ resource "aws_ecs_task_definition" "delegate-runner" {
         },
         {
           name  = "DELEGATE_CHECK_LOCATION",
-          value = "delegatefree.txt"
+          value = var.delegate_check_location
         },
         {
           name  = "DELEGATE_STORAGE_URL",
           value = var.delegate_storage_url
+        },
+        {
+          name  = "LOG_STREAMING_SERVICE_URL",
+          value = var.log_streaming_service_url
         },
         {
           name  = "DELEGATE_TYPE",
@@ -442,12 +488,13 @@ resource "aws_ecs_task_definition" "delegate-runner" {
 }
 
 resource "aws_ecs_service" "this" {
-  name                = "harness-delegate-${var.name}"
-  cluster             = var.cluster_id != "" ? var.cluster_id : aws_ecs_cluster.this[0].id
-  task_definition     = local.runner_config != "" ? aws_ecs_task_definition.delegate-runner[0].arn : aws_ecs_task_definition.delegate[0].arn
-  desired_count       = 1
-  launch_type         = "FARGATE"
-  scheduling_strategy = "REPLICA"
+  name                   = "harness-delegate-${var.name}"
+  cluster                = var.cluster_id != "" ? var.cluster_id : aws_ecs_cluster.this[0].id
+  task_definition        = local.runner_config != "" ? aws_ecs_task_definition.delegate-runner[0].arn : aws_ecs_task_definition.delegate[0].arn
+  desired_count          = 1
+  launch_type            = "FARGATE"
+  scheduling_strategy    = "REPLICA"
+  enable_execute_command = var.enable_ecs_exec
 
   network_configuration {
     security_groups  = var.security_groups
