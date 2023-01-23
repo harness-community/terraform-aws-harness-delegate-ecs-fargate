@@ -136,11 +136,13 @@ No modules.
 | [aws_efs_access_point.runner](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/efs_access_point) | resource |
 | [aws_efs_file_system.runner](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/efs_file_system) | resource |
 | [aws_efs_mount_target.runner](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/efs_mount_target) | resource |
+| [aws_iam_policy.task_exec](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.task_execution](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.task_execution_registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_role.task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.task_execution](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy_attachment.task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.task_exec](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.task_execution](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.task_execution_registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
@@ -153,15 +155,18 @@ No modules.
 | <a name="input_cdn_url"></a> [cdn\_url](#input\_cdn\_url) | n/a | `string` | `"https://app.harness.io"` | no |
 | <a name="input_cluster_id"></a> [cluster\_id](#input\_cluster\_id) | ID for the ECS cluster to use | `string` | `""` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | Name for the ECS cluster created by the module | `string` | `"harness-delegate"` | no |
+| <a name="input_delegate_check_location"></a> [delegate\_check\_location](#input\_delegate\_check\_location) | n/a | `string` | `"delegateprod.txt"` | no |
 | <a name="input_delegate_description"></a> [delegate\_description](#input\_delegate\_description) | n/a | `string` | `""` | no |
 | <a name="input_delegate_image"></a> [delegate\_image](#input\_delegate\_image) | n/a | `string` | `"harness/delegate:latest"` | no |
 | <a name="input_delegate_policy_arns"></a> [delegate\_policy\_arns](#input\_delegate\_policy\_arns) | IAM policies to use for the task role, gives your delegate access to AWS | `list(string)` | n/a | yes |
 | <a name="input_delegate_storage_url"></a> [delegate\_storage\_url](#input\_delegate\_storage\_url) | n/a | `string` | `"https://app.harness.io"` | no |
 | <a name="input_delegate_tags"></a> [delegate\_tags](#input\_delegate\_tags) | n/a | `string` | `""` | no |
 | <a name="input_delegate_token_secret_arn"></a> [delegate\_token\_secret\_arn](#input\_delegate\_token\_secret\_arn) | Secret manager secret that holds the delegate token | `string` | n/a | yes |
+| <a name="input_enable_ecs_exec"></a> [enable\_ecs\_exec](#input\_enable\_ecs\_exec) | Create policy to enable ecs execution on delegate container | `bool` | `false` | no |
 | <a name="input_harness_account_id"></a> [harness\_account\_id](#input\_harness\_account\_id) | Harness account id | `string` | n/a | yes |
 | <a name="input_init_script"></a> [init\_script](#input\_init\_script) | n/a | `string` | `""` | no |
 | <a name="input_kms_key_id"></a> [kms\_key\_id](#input\_kms\_key\_id) | A KMS key to use for encrypting the EFS volume | `string` | `""` | no |
+| <a name="input_log_streaming_service_url"></a> [log\_streaming\_service\_url](#input\_log\_streaming\_service\_url) | n/a | `string` | `"https://app.harness.io/gratis/log-service/"` | no |
 | <a name="input_manager_host_and_port"></a> [manager\_host\_and\_port](#input\_manager\_host\_and\_port) | n/a | `string` | `"https://app.harness.io/gratis"` | no |
 | <a name="input_name"></a> [name](#input\_name) | Delegate name | `string` | n/a | yes |
 | <a name="input_proxy_manager"></a> [proxy\_manager](#input\_proxy\_manager) | n/a | `string` | `""` | no |

@@ -24,6 +24,12 @@ variable "delegate_policy_arns" {
   description = "IAM policies to use for the task role, gives your delegate access to AWS"
 }
 
+variable "enable_ecs_exec" {
+  type        = bool
+  description = "Create policy to enable ecs execution on delegate container"
+  default     = false
+}
+
 variable "cluster_name" {
   type        = string
   default     = "harness-delegate"
@@ -53,6 +59,11 @@ variable "delegate_image" {
   default = "harness/delegate:latest"
 }
 
+variable "delegate_check_location" {
+  type    = string
+  default = "delegateprod.txt"
+}
+
 variable "init_script" {
   type    = string
   default = ""
@@ -67,9 +78,15 @@ variable "watcher_storage_url" {
   type    = string
   default = "https://app.harness.io/public/prod/premium/watchers"
 }
+
 variable "delegate_storage_url" {
   type    = string
   default = "https://app.harness.io"
+}
+
+variable "log_streaming_service_url" {
+  type    = string
+  default = "https://app.harness.io/gratis/log-service/"
 }
 
 variable "watcher_check_location" {
