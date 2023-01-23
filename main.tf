@@ -1,5 +1,75 @@
 locals {
   runner_config = var.base64_runner_config != "" ? var.base64_runner_config : var.runner_config != "" ? base64encode(var.runner_config) : ""
+  delegate_environment = concat([
+    {
+      name  = "ACCOUNT_ID",
+      value = var.harness_account_id
+    },
+    {
+      name  = "DELEGATE_CHECK_LOCATION",
+      value = var.delegate_check_location
+    },
+    {
+      name  = "DELEGATE_STORAGE_URL",
+      value = var.delegate_storage_url
+    },
+    {
+      name  = "LOG_STREAMING_SERVICE_URL",
+      value = var.log_streaming_service_url
+    },
+    {
+      name  = "DELEGATE_TYPE",
+      value = "DOCKER"
+    },
+    {
+      name  = "INIT_SCRIPT",
+      value = var.init_script
+    },
+    {
+      name  = "DEPLOY_MODE",
+      value = "KUBERNETES"
+    },
+    {
+      name  = "MANAGER_HOST_AND_PORT",
+      value = var.manager_host_and_port
+    },
+    {
+      name  = "WATCHER_CHECK_LOCATION",
+      value = var.watcher_check_location
+    },
+    {
+      name  = "WATCHER_STORAGE_URL",
+      value = var.watcher_storage_url
+    },
+    {
+      name  = "CDN_URL",
+      value = var.cdn_url
+    },
+    {
+      name  = "REMOTE_WATCHER_URL_CDN",
+      value = var.remote_watcher_url_cdn
+    },
+    {
+      name  = "DELEGATE_NAME",
+      value = var.name
+    },
+    {
+      name  = "NEXT_GEN",
+      value = "true"
+    },
+    {
+      name  = "DELEGATE_DESCRIPTION",
+      value = var.delegate_description
+    },
+    {
+      name  = "DELEGATE_TAGS",
+      value = var.delegate_tags
+    },
+    {
+      name  = "PROXY_MANAGER",
+      value = var.proxy_manager
+    }
+  ], var.delegate_environment)
 }
 
 data "aws_region" "current" {}
@@ -221,72 +291,7 @@ resource "aws_ecs_task_definition" "delegate" {
           valueFrom = "${var.delegate_token_secret_arn}:::"
         }
       ],
-      environment = [
-        {
-          name  = "ACCOUNT_ID",
-          value = var.harness_account_id
-        },
-        {
-          name  = "DELEGATE_CHECK_LOCATION",
-          value = "delegatefree.txt"
-        },
-        {
-          name  = "DELEGATE_STORAGE_URL",
-          value = var.delegate_storage_url
-        },
-        {
-          name  = "DELEGATE_TYPE",
-          value = "DOCKER"
-        },
-        {
-          name  = "INIT_SCRIPT",
-          value = var.init_script
-        },
-        {
-          name  = "DEPLOY_MODE",
-          value = "KUBERNETES"
-        },
-        {
-          name  = "MANAGER_HOST_AND_PORT",
-          value = var.manager_host_and_port
-        },
-        {
-          name  = "WATCHER_CHECK_LOCATION",
-          value = var.watcher_check_location
-        },
-        {
-          name  = "WATCHER_STORAGE_URL",
-          value = var.watcher_storage_url
-        },
-        {
-          name  = "CDN_URL",
-          value = var.cdn_url
-        },
-        {
-          name  = "REMOTE_WATCHER_URL_CDN",
-          value = var.remote_watcher_url_cdn
-        },
-        {
-          name  = "DELEGATE_NAME",
-          value = var.name
-        },
-        {
-          name  = "NEXT_GEN",
-          value = "true"
-        },
-        {
-          name  = "DELEGATE_DESCRIPTION",
-          value = var.delegate_description
-        },
-        {
-          name  = "DELEGATE_TAGS",
-          value = var.delegate_tags
-        },
-        {
-          name  = "PROXY_MANAGER",
-          value = var.proxy_manager
-        }
-      ]
+      environment = local.delegate_environment
     }
   ])
 
@@ -302,8 +307,8 @@ resource "aws_ecs_task_definition" "delegate-runner" {
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   family                   = "harness-ng-delegate-runner"
-  cpu                      = 1024
-  memory                   = 2048
+  cpu                      = var.cpu
+  memory                   = var.memory
   execution_role_arn       = aws_iam_role.task_execution.arn
   task_role_arn            = aws_iam_role.task.arn
   container_definitions = jsonencode([
@@ -311,7 +316,6 @@ resource "aws_ecs_task_definition" "delegate-runner" {
       name      = "ecs-delegate"
       image     = var.delegate_image
       essential = true
-      memory    = 1024
       repositoryCredentials = var.registry_secret_arn != "" ? {
         credentialsParameter = var.registry_secret_arn
       } : null,
@@ -329,82 +333,12 @@ resource "aws_ecs_task_definition" "delegate-runner" {
           valueFrom = "${var.delegate_token_secret_arn}:::"
         }
       ],
-      environment = [
-        {
-          name  = "ACCOUNT_ID",
-          value = var.harness_account_id
-        },
-        {
-          name  = "DELEGATE_CHECK_LOCATION",
-          value = var.delegate_check_location
-        },
-        {
-          name  = "DELEGATE_STORAGE_URL",
-          value = var.delegate_storage_url
-        },
-        {
-          name  = "LOG_STREAMING_SERVICE_URL",
-          value = var.log_streaming_service_url
-        },
-        {
-          name  = "DELEGATE_TYPE",
-          value = "DOCKER"
-        },
-        {
-          name  = "INIT_SCRIPT",
-          value = var.init_script
-        },
-        {
-          name  = "DEPLOY_MODE",
-          value = "KUBERNETES"
-        },
-        {
-          name  = "MANAGER_HOST_AND_PORT",
-          value = var.manager_host_and_port
-        },
-        {
-          name  = "WATCHER_CHECK_LOCATION",
-          value = var.watcher_check_location
-        },
-        {
-          name  = "WATCHER_STORAGE_URL",
-          value = var.watcher_storage_url
-        },
-        {
-          name  = "CDN_URL",
-          value = var.cdn_url
-        },
-        {
-          name  = "REMOTE_WATCHER_URL_CDN",
-          value = var.remote_watcher_url_cdn
-        },
-        {
-          name  = "DELEGATE_NAME",
-          value = var.name
-        },
-        {
-          name  = "NEXT_GEN",
-          value = "true"
-        },
-        {
-          name  = "DELEGATE_DESCRIPTION",
-          value = var.delegate_description
-        },
-        {
-          name  = "DELEGATE_TAGS",
-          value = var.delegate_tags
-        },
-        {
-          name  = "PROXY_MANAGER",
-          value = var.proxy_manager
-        }
-      ]
+      environment = local.delegate_environment
     },
     {
       name             = "drone-runner"
       image            = var.runner_image
       essential        = false
-      memory           = 1024
       entrypoint       = ["/bin/drone-runner-aws", "delegate", "--pool", "pool.yml"]
       workingDirectory = "/runner"
       repositoryCredentials = var.registry_secret_arn != "" ? {
@@ -437,7 +371,6 @@ resource "aws_ecs_task_definition" "delegate-runner" {
       name      = "create-runner-config"
       image     = "rssnyder/base64-to-file"
       essential = false
-      memory    = 1024
       repositoryCredentials = var.registry_secret_arn != "" ? {
         credentialsParameter = var.registry_secret_arn
       } : {},

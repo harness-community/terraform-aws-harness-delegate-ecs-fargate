@@ -52,6 +52,18 @@ variable "subnets" {
   description = "VPC subnets to place the delegate pods in"
 }
 
+variable "cpu" {
+  type        = number
+  description = "Number of cpu units used by the task"
+  default     = 1024
+}
+
+variable "memory" {
+  type        = number
+  description = "Amount (in MiB) of memory used by the task"
+  default     = 2048
+}
+
 # delegate configuration
 
 variable "delegate_image" {
@@ -117,6 +129,12 @@ variable "delegate_tags" {
 variable "proxy_manager" {
   type    = string
   default = ""
+}
+
+variable "delegate_environment" {
+  type        = list(object({ name = string, value = string }))
+  description = "Additional environment variables to add to the delegate"
+  default     = []
 }
 
 # runner configuration
