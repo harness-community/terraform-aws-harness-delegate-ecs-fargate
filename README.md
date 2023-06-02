@@ -170,6 +170,8 @@ No modules.
 | <a name="input_manager_host_and_port"></a> [manager\_host\_and\_port](#input\_manager\_host\_and\_port) | n/a | `string` | `"https://app.harness.io/gratis"` | no |
 | <a name="input_name"></a> [name](#input\_name) | Delegate name | `string` | n/a | yes |
 | <a name="input_proxy_manager"></a> [proxy\_manager](#input\_proxy\_manager) | n/a | `string` | `""` | no |
+| <a name="input_delegate_environment"></a> [delegate\_environment](#input\_delegate\_environment) | Additional environment variables to add to the delegate | `list(object({ name = string, value = string }))` | `[]` | no |
+| <a name="input_desired_count"></a> [desired\_count](#input\_desired\_count) | number of delegate tasks | `number` | `1` | no |
 | <a name="input_registry_secret_arn"></a> [registry\_secret\_arn](#input\_registry\_secret\_arn) | Secret manager secret that holds the login for a container registry | `string` | `""` | no |
 | <a name="input_remote_watcher_url_cdn"></a> [remote\_watcher\_url\_cdn](#input\_remote\_watcher\_url\_cdn) | n/a | `string` | `"https://app.harness.io/public/shared/watchers/builds"` | no |
 | <a name="input_runner_config"></a> [runner\_config](#input\_runner\_config) | An AWS drone runner config | `string` | `""` | no |
