@@ -424,7 +424,7 @@ resource "aws_ecs_service" "this" {
   name                   = "harness-delegate-${var.name}"
   cluster                = var.cluster_id != "" ? var.cluster_id : aws_ecs_cluster.this[0].id
   task_definition        = local.runner_config != "" ? aws_ecs_task_definition.delegate-runner[0].arn : aws_ecs_task_definition.delegate[0].arn
-  desired_count          = 1
+  desired_count          = var.desired_count
   launch_type            = "FARGATE"
   scheduling_strategy    = "REPLICA"
   enable_execute_command = var.enable_ecs_exec

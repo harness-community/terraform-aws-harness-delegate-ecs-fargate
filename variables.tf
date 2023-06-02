@@ -137,6 +137,11 @@ variable "delegate_environment" {
   default     = []
 }
 
+variable "desired_count" {
+  type    = number
+  default = 1
+}
+
 # runner configuration
 
 variable "runner_image" {
