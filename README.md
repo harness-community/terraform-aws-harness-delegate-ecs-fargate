@@ -77,6 +77,45 @@ EOF
 }
 ```
 
+## Always use latest delegate example
+
+```terraform
+variable "harness_platform_api_key" {
+  type      = string
+  sensitive = true
+}
+
+data "harness_current_account" "current" {}
+
+data "http" "latest_delegate_tag" {
+  url = "https://app.harness.io/ng/api/delegate-setup/latest-supported-version?accountIdentifier=${data.harness_current_account.current.id}"
+
+  # Optional request headers
+  request_headers = {
+    x-api-key = var.harness_platform_api_key
+  }
+}
+
+locals {
+  latest_delegate_tag = jsondecode(data.http.latest_delegate_tag.response_body).resource.latestSupportedVersion
+}
+
+module "delegate" {
+  source                    = "git::https://github.com/harness-community/terraform-aws-harness-delegate-ecs-fargate.git"
+  name                      = "ecs"
+  harness_account_id        = data.harness_current_account.current.id
+  delegate_image            = "harness/delegate:${local.latest_delegate_tag}"
+  delegate_token_secret_arn = "arn:aws:secretsmanager:us-west-2:012345678901:secret:harness/delegate-zBsttc"
+  delegate_policy_arns      = [
+    aws_iam_policy.delegate_aws_access.arn
+  ]
+  security_groups = [
+    module.vpc.default_security_group_id
+  ]
+  subnets = module.vpc.private_subnets
+}
+```
+
 ## Delegate + Drone Runner Example
 
 ![terraform-aws-harness-delegate-ecs-fargate (2)](https://user-images.githubusercontent.com/7338312/207667130-ebf933d8-e1d3-462d-b0ee-9ca3e28a08dc.png)
