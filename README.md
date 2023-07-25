@@ -90,7 +90,6 @@ data "harness_current_account" "current" {}
 data "http" "latest_delegate_tag" {
   url = "https://app.harness.io/ng/api/delegate-setup/latest-supported-version?accountIdentifier=${data.harness_current_account.current.id}"
 
-  # Optional request headers
   request_headers = {
     x-api-key = var.harness_platform_api_key
   }
