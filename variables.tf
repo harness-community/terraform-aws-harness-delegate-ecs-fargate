@@ -68,7 +68,7 @@ variable "memory" {
 
 variable "delegate_image" {
   type    = string
-  default = "harness/delegate:latest"
+  description = "delegate image to use, eg: harness/delegate:23.07.79906"
 }
 
 variable "delegate_check_location" {
