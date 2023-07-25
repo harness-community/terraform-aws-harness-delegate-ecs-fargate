@@ -6,11 +6,18 @@ Optionally, create an ECS [drone runner](https://docs.drone.io/runner/vm/drivers
 
 ## Delegate Example
 
+Your delegate token should be stored in AWS Secrets Manager as a plaintext secret.
+![image](https://github.com/harness-community/terraform-aws-harness-delegate-ecs-fargate/assets/7338312/94b60805-88ec-4ccd-8b9c-59b3688e33fa)
+
+You should also grab the latest delegate image for your account by going to the delegate creation screen and copying the image given in the guide.
+![image](https://github.com/harness-community/terraform-aws-harness-delegate-ecs-fargate/assets/7338312/59f53eb6-0af3-4dd7-970e-4e8a11417a13)
+
 ```terraform
 module "delegate" {
   source                    = "git::https://github.com/harness-community/terraform-aws-harness-delegate-ecs-fargate.git"
   name                      = "ecs"
   harness_account_id        = "wlgELJ0TTre5aZhzpt8gVA"
+  delegate_image            = "harness/delegate:23.07.79904"
   delegate_token_secret_arn = "arn:aws:secretsmanager:us-west-2:012345678901:secret:harness/delegate-zBsttc"
   delegate_policy_arns      = [
     aws_iam_policy.delegate_aws_access.arn
