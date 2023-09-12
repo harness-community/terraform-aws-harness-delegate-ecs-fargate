@@ -20,6 +20,30 @@ module "delegate" {
   delegate_image            = "harness/delegate:23.07.79904"
   delegate_token_secret_arn = "arn:aws:secretsmanager:us-west-2:012345678901:secret:harness/delegate-zBsttc"
   delegate_policy_arns      = [
+    "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+  ]
+  security_groups = [
+    "sg-0a38670715029163f"
+  ]
+  subnets = [
+    "subnet-0ee34605c385f4c65",
+    "subnet-0f26e9386ae01a555"
+  ]
+}
+```
+
+## Example with Policy and Network
+
+The policy and network here must be pre-existing resources.
+
+```terraform
+module "delegate" {
+  source                    = "git::https://github.com/harness-community/terraform-aws-harness-delegate-ecs-fargate.git"
+  name                      = "ecs"
+  harness_account_id        = "wlgELJ0TTre5aZhzpt8gVA"
+  delegate_image            = "harness/delegate:23.07.79904"
+  delegate_token_secret_arn = "arn:aws:secretsmanager:us-west-2:012345678901:secret:harness/delegate-zBsttc"
+  delegate_policy_arns      = [
     aws_iam_policy.delegate_aws_access.arn
   ]
   security_groups = [
