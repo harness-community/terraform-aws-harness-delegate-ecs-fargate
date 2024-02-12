@@ -343,7 +343,7 @@ resource "aws_ecs_task_definition" "delegate-runner" {
       workingDirectory = "/runner"
       repositoryCredentials = var.registry_secret_arn != "" ? {
         credentialsParameter = var.registry_secret_arn
-      } : {},
+      } : null,
       dependsOn = [{
         containerName = "create-runner-config",
         condition     = "SUCCESS"
