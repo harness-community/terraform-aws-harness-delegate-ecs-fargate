@@ -343,7 +343,7 @@ resource "aws_ecs_task_definition" "delegate-runner" {
       workingDirectory = "/runner"
       repositoryCredentials = var.registry_secret_arn != "" ? {
         credentialsParameter = var.registry_secret_arn
-      } : {},
+      } : null,
       dependsOn = [{
         containerName = "create-runner-config",
         condition     = "SUCCESS"
@@ -373,7 +373,7 @@ resource "aws_ecs_task_definition" "delegate-runner" {
       essential = false
       repositoryCredentials = var.registry_secret_arn != "" ? {
         credentialsParameter = var.registry_secret_arn
-      } : {},
+      } : null,
       mountPoints = [{
         containerPath = "/data",
         sourceVolume  = "runner-config"

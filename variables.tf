@@ -67,7 +67,7 @@ variable "memory" {
 # delegate configuration
 
 variable "delegate_image" {
-  type    = string
+  type        = string
   description = "delegate image to use, eg: harness/delegate:23.07.79906"
 }
 
