@@ -264,8 +264,8 @@ resource "aws_ecs_task_definition" "delegate" {
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   family                   = "harness-ng-delegate"
-  cpu                      = 1024
-  memory                   = 2048
+  cpu                      = var.cpu
+  memory                   = var.memory
   execution_role_arn       = aws_iam_role.task_execution.arn
   task_role_arn            = aws_iam_role.task.arn
   container_definitions = jsonencode([
