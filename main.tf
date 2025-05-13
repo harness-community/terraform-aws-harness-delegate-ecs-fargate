@@ -291,7 +291,13 @@ resource "aws_ecs_task_definition" "delegate" {
           valueFrom = "${var.delegate_token_secret_arn}:::"
         }
       ],
-      environment = local.delegate_environment
+      environment = local.delegate_environment,
+      healthCheck: {
+        "command": [
+          "CMD-SHELL",
+          "curl -f localhost:3460/api/health || exit 1"
+        ]
+      }
     }
   ])
 
@@ -365,7 +371,13 @@ resource "aws_ecs_task_definition" "delegate-runner" {
           "containerPort" : 3000,
           "hostPort" : 3000
         }
-      ]
+      ],
+      healthCheck: {
+        "command": [
+          "CMD-SHELL",
+          "curl -f localhost:3460/api/health || exit 1"
+        ]
+      }
     },
     {
       name      = "create-runner-config"
