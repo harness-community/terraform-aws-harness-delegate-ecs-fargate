@@ -1,9 +1,198 @@
+resource "aws_cloudwatch_log_group" "this" {
+  name = "harness/delegate/${var.name}"
+
+  tags = var.tags
+}
+
+resource "aws_ecs_cluster" "this" {
+  count = var.cluster_id != null ? 0 : 1
+
+  name = var.cluster_name
+  configuration {
+    execute_command_configuration {
+      logging = "OVERRIDE"
+      log_configuration {
+        cloud_watch_encryption_enabled = true
+        cloud_watch_log_group_name     = aws_cloudwatch_log_group.this.name
+      }
+    }
+  }
+
+  tags = var.tags
+}
+
 locals {
-  runner_config = var.base64_runner_config != "" ? var.base64_runner_config : var.runner_config != "" ? base64encode(var.runner_config) : ""
+  cluster_id = var.cluster_id != null ? var.cluster_id : aws_ecs_cluster.this[0].id
+  secrets    = compact([local.delegate_token_secret_arn, var.postgres_password_secret_arn, var.registry_secret_arn])
+}
+
+resource "aws_iam_role" "task_execution" {
+  name = "harness-delegate-${var.name}-ecsTaskExecutionRole"
+
+  assume_role_policy = <<EOF
+{
+ "Version": "2012-10-17",
+ "Statement": [
+   {
+     "Action": "sts:AssumeRole",
+     "Principal": {
+       "Service": "ecs-tasks.amazonaws.com"
+     },
+     "Effect": "Allow",
+     "Sid": "ecstaskexecution"
+   }
+ ]
+}
+EOF
+
+  tags = merge(var.tags, {
+    "cluster" = local.cluster_id
+  })
+}
+
+resource "aws_iam_policy" "task_execution_logs" {
+  name        = aws_iam_role.task_execution.name
+  description = "Policy for execution of the delegate container in ecs"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "Logs",
+            "Effect": "Allow",
+            "Action": "logs:*",
+            "Resource": "${aws_cloudwatch_log_group.this.arn}:log-stream:*"
+        }
+    ]
+}
+EOF
+
+  tags = merge(var.tags, {
+    "cluster" = local.cluster_id
+  })
+}
+
+resource "aws_iam_policy" "task_execution_secrets" {
+  count = length(local.secrets) > 0 ? 1 : 0
+
+  name        = "${aws_iam_role.task_execution.name}_secrets"
+  description = "Policy for execution of the delegate container in ecs to retirive necessary secrets"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+           "Sid": "RegistryLogin",
+           "Effect": "Allow",
+           "Action": "secretsmanager:GetSecretValue",
+           "Resource": ${jsonencode(local.secrets)}
+       }
+    ]
+}
+EOF
+
+
+  tags = merge(var.tags, {
+    "cluster" = local.cluster_id
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "task_execution_logs" {
+  role       = aws_iam_role.task_execution.name
+  policy_arn = aws_iam_policy.task_execution_logs.arn
+}
+
+resource "aws_iam_role_policy_attachment" "task_execution_secrets" {
+  count = length(local.secrets) > 0 ? 1 : 0
+
+  role       = aws_iam_role.task_execution.name
+  policy_arn = aws_iam_policy.task_execution_secrets[0].arn
+}
+
+resource "aws_iam_role" "task" {
+  name = "${var.name}-ecsTaskRole"
+
+  assume_role_policy = <<EOF
+{
+ "Version": "2012-10-17",
+ "Statement": [
+   {
+     "Action": "sts:AssumeRole",
+     "Principal": {
+       "Service": "ecs-tasks.amazonaws.com"
+     },
+     "Effect": "Allow",
+     "Sid": ""
+   }
+ ]
+}
+EOF
+
+  tags = merge(var.tags, {
+    "cluster" = local.cluster_id
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "task" {
+  for_each = toset(var.delegate_policy_arns)
+
+  role       = aws_iam_role.task.name
+  policy_arn = each.key
+}
+
+resource "aws_iam_policy" "task_exec" {
+  count = var.enable_ecs_exec ? 1 : 0
+
+  name        = "${aws_iam_role.task_execution.name}_task_exec"
+  description = "Policy for execution of commands on the ecs containers"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "ssmmessages:CreateControlChannel",
+          "ssmmessages:CreateDataChannel",
+          "ssmmessages:OpenControlChannel",
+          "ssmmessages:OpenDataChannel"
+        ],
+        "Resource": "*"
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "logs:DescribeLogGroups",
+          "logs:CreateLogStream",
+          "logs:DescribeLogStreams",
+          "logs:PutLogEvents"
+        ],
+        "Resource": "*"
+      }
+    ]
+}
+EOF
+
+  tags = merge(var.tags, {
+    "cluster" = local.cluster_id
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "task_exec" {
+  count = var.enable_ecs_exec ? 1 : 0
+
+  role       = aws_iam_role.task.name
+  policy_arn = aws_iam_policy.task_exec[0].arn
+}
+
+locals {
   delegate_environment = concat([
     {
       name  = "ACCOUNT_ID",
-      value = var.harness_account_id
+      value = local.harness_account_id
     },
     {
       name  = "DELEGATE_CHECK_LOCATION",
@@ -69,197 +258,17 @@ locals {
       name  = "PROXY_MANAGER",
       value = var.proxy_manager
     }
-  ], var.delegate_environment)
-}
-
-data "aws_region" "current" {}
-
-resource "aws_cloudwatch_log_group" "this" {
-  name = "harness-delegate-${var.name}"
-
-  tags = {
-    "source" = "rssnyder/terraform-aws-harness-delegate-ecs-fargate"
-  }
-}
-
-resource "aws_ecs_cluster" "this" {
-  count = var.cluster_id != "" ? 0 : 1
-
-  name = var.cluster_name
-  configuration {
-    execute_command_configuration {
-      logging = "OVERRIDE"
-      log_configuration {
-        cloud_watch_encryption_enabled = true
-        cloud_watch_log_group_name     = aws_cloudwatch_log_group.this.name
-      }
+    ], local.delegate_token != null ? [
+    {
+      name  = "DELEGATE_TOKEN",
+      value = local.delegate_token
     }
-  }
-
-  tags = {
-    "source" = "rssnyder/terraform-aws-harness-delegate-ecs-fargate"
-  }
-}
-
-resource "aws_iam_role" "task_execution" {
-  name = "harness-delegate-${var.name}-ecsTaskExecutionRole"
-
-  assume_role_policy = <<EOF
-{
- "Version": "2012-10-17",
- "Statement": [
-   {
-     "Action": "sts:AssumeRole",
-     "Principal": {
-       "Service": "ecs-tasks.amazonaws.com"
-     },
-     "Effect": "Allow",
-     "Sid": ""
-   }
- ]
-}
-EOF
-
-  tags = {
-    "source"  = "rssnyder/terraform-aws-harness-delegate-ecs-fargate",
-    "cluster" = var.cluster_id != "" ? var.cluster_id : aws_ecs_cluster.this[0].id
-  }
-}
-
-resource "aws_iam_policy" "task_execution" {
-  name        = aws_iam_role.task_execution.name
-  description = "Policy for execution of the delegate container in ecs"
-
-  policy = <<EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "Logs",
-            "Effect": "Allow",
-            "Action": "logs:*",
-            "Resource": "${aws_cloudwatch_log_group.this.arn}:log-stream:*"
-        },
-        {
-            "Sid": "DelegateTokenSecret",
-            "Effect": "Allow",
-            "Action": "secretsmanager:GetSecretValue",
-            "Resource": "${var.delegate_token_secret_arn}"
-        }
-    ]
-}
-EOF
-}
-
-resource "aws_iam_policy" "task_execution_registry" {
-  count = var.registry_secret_arn != "" ? 1 : 0
-
-  name        = "${aws_iam_role.task_execution.name}_registry"
-  description = "Policy for execution of the delegate container in ecs to log into image registry"
-
-  policy = <<EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-           "Sid": "RegistryLogin",
-           "Effect": "Allow",
-           "Action": "secretsmanager:GetSecretValue",
-           "Resource": "${var.registry_secret_arn}"
-       }
-    ]
-}
-EOF
-}
-
-resource "aws_iam_role_policy_attachment" "task_execution" {
-  role       = aws_iam_role.task_execution.name
-  policy_arn = aws_iam_policy.task_execution.arn
-}
-
-resource "aws_iam_role_policy_attachment" "task_execution_registry" {
-  count = var.registry_secret_arn != "" ? 1 : 0
-
-  role       = aws_iam_role.task_execution.name
-  policy_arn = aws_iam_policy.task_execution_registry[0].arn
-}
-
-resource "aws_iam_role" "task" {
-  name = "${var.name}-ecsTaskRole"
-
-  assume_role_policy = <<EOF
-{
- "Version": "2012-10-17",
- "Statement": [
-   {
-     "Action": "sts:AssumeRole",
-     "Principal": {
-       "Service": "ecs-tasks.amazonaws.com"
-     },
-     "Effect": "Allow",
-     "Sid": ""
-   }
- ]
-}
-EOF
-
-  tags = {
-    "source"  = "rssnyder/terraform-aws-harness-delegate-ecs-fargate",
-    "cluster" = var.cluster_id != "" ? var.cluster_id : aws_ecs_cluster.this[0].id
-  }
-}
-
-resource "aws_iam_role_policy_attachment" "task" {
-  for_each = toset(var.delegate_policy_arns)
-
-  role       = aws_iam_role.task.name
-  policy_arn = each.key
-}
-
-resource "aws_iam_policy" "task_exec" {
-  count = var.enable_ecs_exec ? 1 : 0
-
-  name        = "${aws_iam_role.task_execution.name}_task_exec"
-  description = "Policy for execution of commands on the ecs containers"
-
-  policy = <<EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Effect": "Allow",
-        "Action": [
-          "ssmmessages:CreateControlChannel",
-          "ssmmessages:CreateDataChannel",
-          "ssmmessages:OpenControlChannel",
-          "ssmmessages:OpenDataChannel"
-        ],
-        "Resource": "*"
-      },
-      {
-        "Effect": "Allow",
-        "Action": [
-          "logs:DescribeLogGroups",
-          "logs:CreateLogStream",
-          "logs:DescribeLogStreams",
-          "logs:PutLogEvents"
-        ],
-        "Resource": "*"
-      }
-    ]
-}
-EOF
-}
-
-resource "aws_iam_role_policy_attachment" "task_exec" {
-  count = var.enable_ecs_exec ? 1 : 0
-
-  role       = aws_iam_role.task.name
-  policy_arn = aws_iam_policy.task_exec[0].arn
+    ] : [],
+  var.delegate_environment)
 }
 
 resource "aws_ecs_task_definition" "delegate" {
-  count = local.runner_config != "" ? 0 : 1
+  count = var.runner_config != "" ? 0 : 1
 
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
@@ -285,15 +294,15 @@ resource "aws_ecs_task_definition" "delegate" {
           awslogs-stream-prefix = "ecs/delegate"
         }
       },
-      secrets = [
+      secrets = local.delegate_token_secret_arn != null ? [
         {
           name      = "DELEGATE_TOKEN",
-          valueFrom = "${var.delegate_token_secret_arn}:::"
+          valueFrom = "${local.delegate_token_secret_arn}:::"
         }
-      ],
+      ] : [],
       environment = local.delegate_environment,
-      healthCheck: {
-        "command": [
+      healthCheck : {
+        "command" : [
           "CMD-SHELL",
           "curl -f localhost:3460/api/health || exit 1"
         ]
@@ -301,14 +310,67 @@ resource "aws_ecs_task_definition" "delegate" {
     }
   ])
 
-  tags = {
-    "source"  = "rssnyder/terraform-aws-harness-delegate-ecs-fargate",
-    "cluster" = var.cluster_id != "" ? var.cluster_id : aws_ecs_cluster.this[0].id
-  }
+  tags = merge(var.tags, {
+    "cluster" = local.cluster_id
+  })
+}
+
+locals {
+  runner_environment = concat([
+    {
+      name  = "POOL_CONFIG",
+      value = var.runner_config
+    },
+    {
+      name  = "DEBUG",
+      value = var.runner_debug
+    },
+    {
+      name  = "NAME",
+      value = var.name
+    },
+    {
+      name  = "PARALLEL_WORKERS",
+      value = var.runner_parallel_workers
+    },
+    {
+      name  = "POLL_INTERVAL_MILLISECS",
+      value = var.runner_poll_interval
+    },
+    {
+      name  = "SKIP_PREPARE_SERVER",
+      value = var.runner_skip_prepare_server
+    },
+    {
+      name  = "TRACE",
+      value = var.runner_trace
+    },
+    {
+      name  = "ACCOUNT_ID",
+      value = local.harness_account_id
+    },
+    {
+      name  = "DRONE_DATABASE_DRIVER",
+      value = "postgres"
+    },
+    {
+      name  = "DRONE_RUNNER_HA",
+      value = var.runner_ha_enabled
+    },
+    {
+      name  = "DRONE_DELEGATE_DISTRIBUTED_MODE",
+      value = var.runner_distributed_mode
+    },
+    {
+      name  = "DRONE_DATABASE_DATASOURCE",
+      value = "host=${var.postgres_host} user=${var.postgres_user} password=${var.postgres_password} dbname=${var.postgres_database} sslmode=${var.postgres_ssl_mode} port=${var.postgres_port}"
+    }
+    ],
+  var.runner_environment)
 }
 
 resource "aws_ecs_task_definition" "delegate-runner" {
-  count = local.runner_config != "" ? 1 : 0
+  count = var.runner_config != "" ? 1 : 0
 
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
@@ -333,109 +395,69 @@ resource "aws_ecs_task_definition" "delegate-runner" {
           awslogs-stream-prefix = "ecs/delegate"
         }
       },
-      secrets = [
+      secrets = local.delegate_token_secret_arn != null ? [
         {
           name      = "DELEGATE_TOKEN",
-          valueFrom = "${var.delegate_token_secret_arn}:::"
+          valueFrom = "${local.delegate_token_secret_arn}:::"
         }
-      ],
+      ] : [],
       environment = local.delegate_environment
     },
     {
-      name             = "drone-runner"
-      image            = var.runner_image
-      essential        = false
-      entrypoint       = ["/bin/drone-runner-aws", "delegate", "--pool", "pool.yml"]
-      workingDirectory = "/runner"
+      name       = "harness-vm-runner"
+      image      = var.runner_image
+      entryPoint = ["/bin/sh", "-c"]
+      command = [
+        "mkdir -p /tmp/config && echo \"$POOL_CONFIG\" > /tmp/config/pool.yml && /bin/harness-vm-runner delegate --pool /tmp/config/pool.yml"
+      ]
+      essential = false
+      user      = "nobody"
       repositoryCredentials = var.registry_secret_arn != "" ? {
         credentialsParameter = var.registry_secret_arn
-      } : null,
-      dependsOn = [{
-        containerName = "create-runner-config",
-        condition     = "SUCCESS"
-      }]
-      mountPoints = [{
-        containerPath = "/runner",
-        sourceVolume  = "runner-config"
-      }]
+      } : null
       logConfiguration = {
         logDriver = "awslogs",
         options = {
           awslogs-group         = aws_cloudwatch_log_group.this.name,
           awslogs-region        = data.aws_region.current.name,
-          awslogs-stream-prefix = "ecs/runner"
+          awslogs-stream-prefix = "ecs/harness-vm-runner"
         }
       },
-      portMappings : [
+      portMappings = [
         {
-          "containerPort" : 3000,
-          "hostPort" : 3000
+          containerPort = 3000,
+          hostPort      = 3000
         }
       ],
-      healthCheck: {
-        "command": [
-          "CMD-SHELL",
-          "curl -f localhost:3460/api/health || exit 1"
-        ]
-      }
-    },
-    {
-      name      = "create-runner-config"
-      image     = "rssnyder/base64-to-file"
-      essential = false
-      repositoryCredentials = var.registry_secret_arn != "" ? {
-        credentialsParameter = var.registry_secret_arn
-      } : null,
-      mountPoints = [{
-        containerPath = "/data",
-        sourceVolume  = "runner-config"
-      }]
-      logConfiguration = {
-        logDriver = "awslogs",
-        options = {
-          awslogs-group         = aws_cloudwatch_log_group.this.name,
-          awslogs-region        = data.aws_region.current.name,
-          awslogs-stream-prefix = "ecs/create-runner-config"
+      secrets = var.postgres_password_secret_arn != null ? [
+        {
+          name      = "POSTGRES_PASSWORD",
+          valueFrom = "${var.postgres_password_secret_arn}:::"
         }
-      },
-      environment = [
-        {
-          name  = "BASE64_FILE",
-          value = local.runner_config
-        },
-        {
-          name  = "FILENAME",
-          value = "pool.yml"
-        },
-      ]
+      ] : [],
+      environment = local.runner_environment,
+      healthCheck = {
+        command = [
+          "CMD-SHELL",
+          "curl -f http://localhost:3000/healthz || exit 1"
+        ],
+        interval    = 30,
+        timeout     = 5,
+        retries     = 3,
+        startPeriod = 60
+      }
     }
   ])
 
-  volume {
-    name = "runner-config"
-
-    efs_volume_configuration {
-      file_system_id          = aws_efs_file_system.runner[0].id
-      root_directory          = "/"
-      transit_encryption      = "ENABLED"
-      transit_encryption_port = 2999
-      authorization_config {
-        access_point_id = aws_efs_access_point.runner[0].id
-        iam             = "ENABLED"
-      }
-    }
-  }
-
-  tags = {
-    "source"  = "rssnyder/terraform-aws-harness-delegate-ecs-fargate",
-    "cluster" = var.cluster_id != "" ? var.cluster_id : aws_ecs_cluster.this[0].id
-  }
+  tags = merge({
+    cluster = local.cluster_id
+  }, var.tags)
 }
 
 resource "aws_ecs_service" "this" {
   name                   = "harness-delegate-${var.name}"
-  cluster                = var.cluster_id != "" ? var.cluster_id : aws_ecs_cluster.this[0].id
-  task_definition        = local.runner_config != "" ? aws_ecs_task_definition.delegate-runner[0].arn : aws_ecs_task_definition.delegate[0].arn
+  cluster                = local.cluster_id
+  task_definition        = var.runner_config != "" ? aws_ecs_task_definition.delegate-runner[0].arn : aws_ecs_task_definition.delegate[0].arn
   desired_count          = var.desired_count
   launch_type            = "FARGATE"
   scheduling_strategy    = "REPLICA"

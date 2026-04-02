@@ -1,21 +1,24 @@
 version: "1"
 instances:
-  - name: linux
-    default: true
-    type: amazon
-    pool: 0
-    limit: 4
-    platform:
-      os: linux
-      arch: amd64
-    spec:
-      account:
-        region: us-west-2
-        availability_zone: us-west-2a
-      ami: ami-08df94af6199f15b6
-      size: t2.nano
-      network:
-        private_ip: true
-        subnet_id: subnet-0974d4940eab1ea9d
-        security_groups:
-        - sg-0472e18c1a90179d9
+- name: aws-inline
+  type: amazon
+  pool: 0
+  limit: 3
+  platform:
+    arch: amd64
+    os: linux
+    os_name: amazon-linux
+  spec:
+    account:
+      region: us-west-2
+    ami: ami-0f4f85bd3b0ba1cb9
+    disk:
+      size: 105
+    hibernate: true
+    iam_profile_arn: arn:aws:iam::664418987337:instance-profile/byoc-build-vm
+    network:
+      private_ip: true
+      security_groups:
+      - sg-0761b8ae91f59ffdc
+      subnet_id: subnet-08b0523406a22a098
+    size: t2.medium
