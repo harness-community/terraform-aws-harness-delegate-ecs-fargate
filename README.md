@@ -145,7 +145,7 @@ The below example shows how to provision a Harness VM runner with an ECS delegat
 
 ```terraform
 module "ecs-byoc" {
-  source = "git::https://github.com/harness-community/terraform-aws-harness-byoc.git"
+  source = "git::https://github.com/harness-community/terraform-aws-harness-vm-runner.git"
 
   # Project configuration
   project_name = "vm-build-farm"
