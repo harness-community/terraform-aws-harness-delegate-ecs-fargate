@@ -299,7 +299,7 @@ No modules.
 | memory | Amount (in MiB) of memory used by the task | `number` | `2048` | no |
 | name | Delegate name | `string` | n/a | yes |
 | postgres\_database | PostgreSQL database name | `string` | `"harness_runner"` | no |
-| postgres\_host | PostgreSQL host for the VM runner | `string` | `null` | no |
+| postgres\_host | PostgreSQL host for the VM runner; Set to enable PostgreSQL storage | `string` | `null` | no |
 | postgres\_password | PostgreSQL password; Required if postgres\_password\_secret\_arn is not set | `string` | `null` | no |
 | postgres\_password\_secret\_arn | Secret manager ARN for PostgreSQL password; Required if postgres\_password is not set | `string` | `null` | no |
 | postgres\_port | PostgreSQL port | `string` | `"5432"` | no |
@@ -309,6 +309,7 @@ No modules.
 | registry\_secret\_arn | Secret manager secret that holds the login for a container registry | `string` | `""` | no |
 | remote\_watcher\_url\_cdn | n/a | `string` | `"https://app.harness.io/public/shared/watchers/builds"` | no |
 | runner\_config | A Harness VM runner pool config (YAML string) | `string` | `null` | no |
+| runner\_database\_datasource | Database datasource for the runner; Only used if postgres\_host is not set (used for sqlite db path) | `string` | `"database.sqlite3"` | no |
 | runner\_debug | Enable debug mode for the runner | `string` | `"false"` | no |
 | runner\_distributed\_mode | Enable distributed mode for the runner | `string` | `"false"` | no |
 | runner\_environment | Additional environment variables to add to the runner | `list(object({ name = string, value = string }))` | `[]` | no |

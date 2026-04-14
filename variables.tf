@@ -208,9 +208,15 @@ variable "runner_skip_prepare_server" {
   default     = "true"
 }
 
+variable "runner_database_datasource" {
+  type        = string
+  description = "Database datasource for the runner; Only used if postgres_host is not set (used for sqlite db path)"
+  default     = "database.sqlite3"
+}
+
 variable "postgres_host" {
   type        = string
-  description = "PostgreSQL host for the VM runner"
+  description = "PostgreSQL host for the VM runner; Set to enable PostgreSQL storage"
   default     = null
 }
 

@@ -351,7 +351,7 @@ locals {
     },
     {
       name  = "DRONE_DATABASE_DRIVER",
-      value = "postgres"
+      value = var.postgres_host != null ? "postgres" : "sqlite3"
     },
     {
       name  = "DRONE_RUNNER_HA",
@@ -363,7 +363,7 @@ locals {
     },
     {
       name  = "DRONE_DATABASE_DATASOURCE",
-      value = "host=${var.postgres_host} user=${var.postgres_user} password=${var.postgres_password} dbname=${var.postgres_database} sslmode=${var.postgres_ssl_mode} port=${var.postgres_port}"
+      value = var.postgres_host != null ? "host=${var.postgres_host} user=${var.postgres_user} password=${var.postgres_password} dbname=${var.postgres_database} sslmode=${var.postgres_ssl_mode} port=${var.postgres_port}" : var.runner_database_datasource
     }
     ],
   var.runner_environment)
